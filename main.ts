@@ -1,24 +1,31 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+// Make the AI Judge Feel Nostalgic: A Childhood Memory — v2 entry
+// Bounty: u-shino-make-the-ai-judge-feel-nostalgic-a-childhood-625d3363
+// Gate: exactly one sentence, 1-280 characters.
+
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const TEXT = "Grandma's kitchen smelled of fried rice and kerosene, and the radio played the same song every evening while she saved the crispy bits at the bottom of the pan for me.";
+const ENTRY =
+  "There's a song my sister taped by holding our cassette recorder up to the radio, and whenever I hear it I still wait for Mum to call my name just before the chorus.";
 
-// Validate: length must be 1-280 characters.
-if (TEXT.length < 1 || TEXT.length > 280) {
-  throw new Error(`entry must be 1-280 characters, got ${TEXT.length}`);
-}
+const outDir =
+  process.env.MAKEFUN_OUTPUT_DIR || process.env.MAKEFUN_OUTPUT || "/output";
 
-// Validate: single line, no embedded newline or surrounding whitespace.
-if (TEXT.includes("\n") || TEXT.trim() !== TEXT) {
-  throw new Error("entry must be a single line with no leading/trailing whitespace");
-}
-
-// Validate: exactly one sentence (one terminal period, no extra sentence breaks).
-const sentenceCount = (TEXT.match(/[.!?]+/g) ?? []).length;
-if (sentenceCount !== 1 || !TEXT.endsWith(".")) {
-  throw new Error(`entry must be exactly one sentence, got ${sentenceCount} sentence terminators`);
-}
-
-const outDir = process.env.MAKEFUN_OUTPUT ?? "/output";
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, "entry.txt"), TEXT + "\n", "utf8");
+const outPath = join(outDir, "entry.txt");
+writeFileSync(outPath, ENTRY, "utf8");
+
+// Self-check: read back from the output dir and verify byte-exact.
+const back = readFileSync(outPath, "utf8");
+if (back !== ENTRY) {
+  throw new Error("self-check failed: entry.txt does not match ENTRY");
+}
+if (back.length !== 164 || back.endsWith("\n")) {
+  throw new Error("self-check failed: entry must be exactly 164 chars, no trailing newline");
+}
+const terminators = (back.match(/[.!?]+/g) ?? []).length;
+if (terminators !== 1 || !back.endsWith(".")) {
+  throw new Error("self-check failed: entry must be exactly one sentence");
+}
+
+console.log("Wrote entry.txt (164 chars, byte-exact).");
